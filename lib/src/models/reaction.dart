@@ -6,6 +6,7 @@ class Reaction<T> {
     required this.icon,
     Widget? previewIcon,
     this.title,
+    this.isSelected = false,
   }) : previewIcon = previewIcon ?? icon;
 
   /// Widget showing as button after selecting preview Icon from box appear.
@@ -22,6 +23,8 @@ class Reaction<T> {
   final Widget? title;
 
   final T? value;
+
+  final bool isSelected;
 
   @override
   bool operator ==(Object? other) {

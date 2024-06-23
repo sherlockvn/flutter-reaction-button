@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_reaction_button/flutter_reaction_button.dart';
 import 'package:flutter_reaction_button/src/enums/reaction.dart';
 import 'package:flutter_reaction_button/src/extensions/key.dart';
@@ -88,8 +89,7 @@ class ReactionButton<T> extends StatefulWidget {
 class _ReactionButtonState<T> extends State<ReactionButton<T>> {
   final GlobalKey _globalKey = GlobalKey();
 
-  late Reaction<T>? _selectedReaction =
-      _isChecked ? widget.selectedReaction : widget.placeholder;
+  late Reaction<T>? _selectedReaction = _isChecked ? widget.selectedReaction : widget.placeholder;
 
   late bool _isChecked = widget.isChecked;
 
@@ -108,9 +108,7 @@ class _ReactionButtonState<T> extends State<ReactionButton<T>> {
   void _onCheck() {
     _isChecked = !_isChecked;
     _updateReaction(
-      _isChecked
-          ? widget.selectedReaction ?? widget.reactions.first
-          : widget.placeholder,
+      _isChecked ? widget.selectedReaction ?? widget.reactions.first : widget.placeholder,
     );
   }
 
@@ -131,6 +129,7 @@ class _ReactionButtonState<T> extends State<ReactionButton<T>> {
           itemScaleDuration: widget.itemAnimationDuration,
           animateBox: widget.animateBox,
           direction: widget.direction,
+          reactionHighlightNotifier: reactionHighlightNotifier,
           onReactionSelected: (reaction) {
             _updateReaction(reaction);
             _disposeOverlayEntry();
@@ -159,13 +158,47 @@ class _ReactionButtonState<T> extends State<ReactionButton<T>> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    reactionWidth = widget.itemSize.width.toInt() + widget.itemsSpacing.toInt();
+    reactionPositions = List.generate(widget.reactions.length, (index) => index + 1);
+  }
+
+  int reactionWidth = 0;
+
+  List<int> reactionPositions = [];
+
+  ValueNotifier<Reaction<T>?> reactionHighlightNotifier = ValueNotifier(null);
+
+  @override
   Widget build(BuildContext context) {
-    final Widget? child = _isContainer
-        ? widget.child
-        : (_selectedReaction ?? widget.reactions.first)!.icon;
+    final Widget? child =
+        _isContainer ? widget.child : (_selectedReaction ?? widget.reactions.first)!.icon;
 
     return GestureDetector(
       key: _globalKey,
+      onLongPressMoveUpdate: (details) {
+        debugPrint('onLongPressMoveUpdate global: ${details.globalPosition}');
+
+        final reactionPositiondx = details.globalPosition.dx;
+        final postition = reactionPositiondx ~/ reactionWidth;
+        if (postition > 0 && postition < widget.reactions.length + 1) {
+          reactionHighlightNotifier.value = widget.reactions[postition - 1];
+          debugPrint('reactionHighlight: $postition');
+        }
+      },
+      onLongPressUp: () {
+        final currentReaction = reactionHighlightNotifier.value;
+        if (currentReaction != null) {
+          reactionHighlightNotifier.value = Reaction(
+            value: currentReaction.value,
+            icon: currentReaction.icon,
+            previewIcon: currentReaction.icon,
+            title: currentReaction.title,
+            isSelected: true,
+          );
+        }
+      },
       onTap: () {
         if (widget.toggle) {
           _onCheck();

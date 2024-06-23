@@ -19,6 +19,7 @@ class ReactionsBox<T> extends StatefulWidget {
     required this.itemScale,
     required this.itemScaleDuration,
     required this.onReactionSelected,
+    required this.reactionHighlightNotifier,
     required this.onClose,
     required this.animateBox,
     this.direction = ReactionsBoxAlignment.ltr,
@@ -27,6 +28,8 @@ class ReactionsBox<T> extends StatefulWidget {
   final Offset offset;
 
   final Size itemSize;
+
+  final ValueNotifier<Reaction<T>?> reactionHighlightNotifier;
 
   final List<Reaction<T>?> reactions;
 
@@ -58,8 +61,7 @@ class ReactionsBox<T> extends StatefulWidget {
   State<ReactionsBox<T>> createState() => _ReactionsBoxState<T>();
 }
 
-class _ReactionsBoxState<T> extends State<ReactionsBox<T>>
-    with SingleTickerProviderStateMixin {
+class _ReactionsBoxState<T> extends State<ReactionsBox<T>> with SingleTickerProviderStateMixin {
   final PositionNotifier _positionNotifier = PositionNotifier();
 
   late final AnimationController _boxAnimationController = AnimationController(
@@ -80,8 +82,7 @@ class _ReactionsBoxState<T> extends State<ReactionsBox<T>>
       ? widget.offset.dx + _boxWidth > MediaQuery.sizeOf(context).width
       : widget.offset.dx - _boxWidth < 0;
 
-  bool get _shouldStartFromBottom =>
-      widget.offset.dy - _boxHeight - widget.boxPadding.vertical < 0;
+  bool get _shouldStartFromBottom => widget.offset.dy - _boxHeight - widget.boxPadding.vertical < 0;
 
   void _checkIsOffsetOutsideBox(Offset offset) {
     final Rect boxRect = Rect.fromLTWH(0, 0, _boxWidth, _boxHeight);
@@ -111,8 +112,7 @@ class _ReactionsBoxState<T> extends State<ReactionsBox<T>>
       valueListenable: _positionNotifier,
       builder: (context, fingerPosition, child) {
         final bool isBoxHovered = fingerPosition?.isBoxHovered ?? false;
-        final double boxScale =
-            1 - (widget.itemScale / widget.reactions.length);
+        final double boxScale = 1 - (widget.itemScale / widget.reactions.length);
 
         final double widthOverflow;
         if (_isWidthOverflow) {
@@ -213,6 +213,7 @@ class _ReactionsBoxState<T> extends State<ReactionsBox<T>>
                   child: ReactionsBoxItem<T>(
                     index: index,
                     fingerPositionNotifier: _positionNotifier,
+                    reactionHighlightNotifier: widget.reactionHighlightNotifier,
                     reaction: widget.reactions[index]!,
                     size: widget.itemSize,
                     scale: widget.itemScale,

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reaction_button/flutter_reaction_button.dart';
 import 'package:flutter_reaction_button/src/common/position_notifier.dart';
+import 'package:flutter/services.dart';
 
 class ReactionsBoxItem<T> extends StatefulWidget {
   const ReactionsBoxItem({
     super.key,
     required this.reaction,
     required this.onReactionSelected,
+    required this.reactionHighlightNotifier,
     required this.scale,
     required this.index,
     required this.size,
@@ -18,6 +20,8 @@ class ReactionsBoxItem<T> extends StatefulWidget {
   final Reaction<T> reaction;
 
   final ValueChanged<Reaction<T>?> onReactionSelected;
+
+  final ValueNotifier<Reaction<T>?> reactionHighlightNotifier;
 
   final Duration animationDuration;
 
@@ -46,8 +50,7 @@ class _ReactionsBoxItemState<T> extends State<ReactionsBoxItem<T>>
 
   void _listener() {
     final Offset fingerOffset = widget.fingerPositionNotifier.value.offset;
-    final Offset topLeft =
-        Offset((widget.size.width + widget.space) * widget.index, 0);
+    final Offset topLeft = Offset((widget.size.width + widget.space) * widget.index, 0);
     final Offset bottomRight = Offset(
       (widget.size.width + widget.space) * (widget.index + 1),
       widget.size.height,
@@ -56,8 +59,7 @@ class _ReactionsBoxItemState<T> extends State<ReactionsBoxItem<T>>
     final bool selected = rect.contains(fingerOffset);
 
     if (selected) {
-      final bool isBoxHovered =
-          widget.fingerPositionNotifier.value.isBoxHovered;
+      final bool isBoxHovered = widget.fingerPositionNotifier.value.isBoxHovered;
       if (!isBoxHovered) {
         widget.onReactionSelected(widget.reaction);
       }
@@ -71,12 +73,25 @@ class _ReactionsBoxItemState<T> extends State<ReactionsBoxItem<T>>
   void initState() {
     super.initState();
     widget.fingerPositionNotifier.addListener(_listener);
+    widget.reactionHighlightNotifier.addListener(reactionListener);
+  }
+
+  void reactionListener() {
+    if (widget.reactionHighlightNotifier.value == widget.reaction) {
+      _animationController.forward();
+      HapticFeedback.lightImpact();
+    } else if (widget.reactionHighlightNotifier.value?.isSelected == true) {
+      widget.onReactionSelected(widget.reactionHighlightNotifier.value);
+    } else {
+      _animationController.reverse();
+    }
   }
 
   @override
   void dispose() {
     widget.fingerPositionNotifier.removeListener(_listener);
     _animationController.dispose();
+    widget.reactionHighlightNotifier.removeListener(reactionListener);
     super.dispose();
   }
 
@@ -85,9 +100,8 @@ class _ReactionsBoxItemState<T> extends State<ReactionsBoxItem<T>>
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
-        final bool showTitle =
-            _animationController.value == _animationController.upperBound &&
-                widget.reaction.title != null;
+        final bool showTitle = _animationController.value == _animationController.upperBound &&
+            widget.reaction.title != null;
 
         return Stack(
           clipBehavior: Clip.none,
@@ -102,8 +116,7 @@ class _ReactionsBoxItemState<T> extends State<ReactionsBoxItem<T>>
             ),
             if (widget.reaction.title != null) ...{
               Positioned(
-                bottom:
-                    widget.size.height * (1 + (_animationController.value / 2)),
+                bottom: widget.size.height * (1 + (_animationController.value / 2)),
                 child: AnimatedOpacity(
                   opacity: showTitle ? 1 : 0,
                   duration: widget.animationDuration,
