@@ -57,6 +57,7 @@ final List<Reaction<String>> flagsReactions = [
 const defaultInitialReaction = Reaction<String>(
   value: null,
   icon: Text(
+    key: ValueKey('no reaction'),
     'No reaction',
   ),
 );
@@ -210,7 +211,7 @@ Widget _buildEmojiTitle(String title) {
 }
 
 Widget _buildEmojiPreviewIcon(String path) {
-  return Image.asset(path);
+  return Image.asset(key: ValueKey(path), path);
 }
 
 Widget _buildFlagIcon(String path) {

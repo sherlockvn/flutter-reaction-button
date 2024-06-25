@@ -12,6 +12,7 @@ class ReactionButton<T> extends StatefulWidget {
     required this.reactions,
     this.placeholder,
     this.selectedReaction,
+    this.emptyReaction,
     this.boxColor = Colors.white,
     this.boxElevation = 5,
     this.boxRadius = 50,
@@ -82,6 +83,8 @@ class ReactionButton<T> extends StatefulWidget {
 
   final ReactionType _type;
 
+  final Reaction<T>? emptyReaction;
+
   @override
   State<ReactionButton<T>> createState() => _ReactionButtonState<T>();
 }
@@ -103,13 +106,6 @@ class _ReactionButtonState<T> extends State<ReactionButton<T>> {
     setState(() {
       _selectedReaction = reaction;
     });
-  }
-
-  void _onCheck() {
-    _isChecked = !_isChecked;
-    _updateReaction(
-      _isChecked ? widget.selectedReaction ?? widget.reactions.first : widget.placeholder,
-    );
   }
 
   void _onShowReactionsBox([Offset? offset]) {
@@ -201,7 +197,11 @@ class _ReactionButtonState<T> extends State<ReactionButton<T>> {
       },
       onTap: () {
         if (widget.toggle) {
-          _onCheck();
+          if (_selectedReaction == widget.emptyReaction) {
+              _updateReaction(widget.selectedReaction);
+            } else {
+              _updateReaction(widget.emptyReaction);
+            }
         } else {
           _onShowReactionsBox();
         }
@@ -211,7 +211,16 @@ class _ReactionButtonState<T> extends State<ReactionButton<T>> {
           _onShowReactionsBox(_isContainer ? details.globalPosition : null);
         }
       },
-      child: child,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        transitionBuilder: (child, animationController) {
+          return FadeTransition(
+            opacity: animationController,
+            child: child,
+          );
+        },
+        child: child,
+      ),
     );
   }
 }

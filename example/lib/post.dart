@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reaction_button/flutter_reaction_button.dart';
 import 'package:flutter_reaction_button_test/data.dart' as data;
+import 'package:flutter_reaction_button_test/data.dart';
 
 class PostWidget extends StatelessWidget {
   const PostWidget({
@@ -45,8 +46,9 @@ class PostWidget extends StatelessWidget {
                       debugPrint('Selected value: ${reaction?.value}');
                     },
                     reactions: reactions,
-                    placeholder: data.defaultInitialReaction,
+                    placeholder: reactions.last,
                     selectedReaction: reactions.first,
+                    emptyReaction: defaultInitialReaction,
                   ),
                   Row(
                     children: [
