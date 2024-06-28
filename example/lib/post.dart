@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_reaction_button/flutter_reaction_button.dart';
-import 'package:flutter_reaction_button_test/data.dart' as data;
 import 'package:flutter_reaction_button_test/data.dart';
 
 class PostWidget extends StatelessWidget {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_reaction_button/flutter_reaction_button.dart';
 import 'package:flutter_reaction_button/src/enums/reaction.dart';
 import 'package:flutter_reaction_button/src/extensions/key.dart';
@@ -168,8 +168,6 @@ class _ReactionButtonState<T> extends State<ReactionButton<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final Widget? child =
-        _isContainer ? widget.child : (_selectedReaction ?? widget.reactions.first)!.icon;
 
     return GestureDetector(
       key: _globalKey,
@@ -198,10 +196,11 @@ class _ReactionButtonState<T> extends State<ReactionButton<T>> {
       onTap: () {
         if (widget.toggle) {
           if (_selectedReaction == widget.emptyReaction) {
-              _updateReaction(widget.selectedReaction);
-            } else {
-              _updateReaction(widget.emptyReaction);
-            }
+            HapticFeedback.lightImpact();
+            _updateReaction(widget.selectedReaction);
+          } else {
+            _updateReaction(widget.emptyReaction);
+          }
         } else {
           _onShowReactionsBox();
         }
@@ -219,7 +218,7 @@ class _ReactionButtonState<T> extends State<ReactionButton<T>> {
             child: child,
           );
         },
-        child: child,
+        child: widget.child ?? (_selectedReaction ?? widget.reactions.first)!.icon,
       ),
     );
   }
